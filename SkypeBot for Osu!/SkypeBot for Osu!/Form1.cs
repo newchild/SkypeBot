@@ -15,11 +15,12 @@ namespace SkypeBot_for_Osu_
 {
 	public partial class Form1 : Form
 	{
-		
+		string description = "";
 		BotCore Core;
 		List<CompiledCode> allScripts = new List<CompiledCode>();
 		List<string> ScriptNames = new List<string>();
 		Scripting_Engine PyEngine;
+		string user;
 		public Form1()
 		{
 			InitializeComponent();
@@ -30,12 +31,12 @@ namespace SkypeBot_for_Osu_
 			Core = new BotCore();
 			PyEngine = new Scripting_Engine();
 			setupVars(PyEngine);
+			user = Core.getNickName();
 			Core.onMessageReceived+=Core_onMessageReceived;
 		}	
 
 		private void Core_onMessageReceived(ChatMessage pMessage, TChatMessageStatus Status)
 		{
-			
 			foreach (var script in allScripts)
 			{
 				PyEngine.runScript(script);
@@ -44,14 +45,19 @@ namespace SkypeBot_for_Osu_
 			}
 		}
 
+		
+
 		private void setupVars(Scripting_Engine PyEngine)
 		{
 			PyEngine.addVar("MessageBox", new Action<string>(ShowMessageBox));
-			
+			PyEngine.addVar("user", user);
+			PyEngine.addVar("sendMessage", new Action<string, string>(Core.sendMessage));
+			PyEngine.addVar("sendMessageToChat", new Action<Chat, string>(Core.sendMessageToChat));
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
+			
 			openFileDialog1.ShowDialog();
 			if (!ScriptNames.Contains(openFileDialog1.SafeFileName))
 			{
@@ -59,11 +65,12 @@ namespace SkypeBot_for_Osu_
 				var scriptloaded = PyEngine.loadScriptFromFile(file);
 				allScripts.Add(scriptloaded);
 				PyEngine.runScript(scriptloaded);
+				string desc = PyEngine.getDescription();
 				ScriptNames.Add(openFileDialog1.SafeFileName);
 				var stringBuilder = "Selected Scripts:\n";
 				foreach (var name in ScriptNames)
 				{
-					stringBuilder += name + "\n";
+					stringBuilder += name + ": " + desc + "\n";
 				}
 				label1.Text = stringBuilder;
 			}

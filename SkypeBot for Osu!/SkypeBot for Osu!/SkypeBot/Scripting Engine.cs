@@ -49,6 +49,18 @@ namespace SkypeBot_for_Osu_.SkypeBot
 			return pyScope.GetVariable("onMessage");
 		}
 
+		public dynamic getDescription()
+		{
+			try {
+				return pyScope.GetVariable("description");
+			}
+			catch (Exception e)
+			{
+				return "No description set";
+			}
+			
+		}
+
 		
 		
 	}
