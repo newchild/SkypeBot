@@ -16,6 +16,7 @@ namespace SkypeBot_for_Osu_.SkypeBot
 		private Skype Core;
 		private bool connected;
 		private string CurrentStatus;
+		long LastTick =  DateTime.Now.Ticks;
 		public BotCore()
 		{
 			Core = new Skype();
@@ -51,23 +52,24 @@ namespace SkypeBot_for_Osu_.SkypeBot
 
 		void Core_UserAuthorizationRequestReceived(User pUser)
 		{
-			pUser.IsAuthorized = true;
+				
 		}
 
 		
 
 		void Core_CallStatus(Call pCall, TCallStatus Status)
 		{
-			pCall.Finish();
-			Core.SendMessage(pCall.PartnerHandle, "I am afraid I can't talk :(");
+			
 		}
 
-		 void onMessageReceivedEvent(ChatMessage pMessage, TChatMessageStatus Status)
+		void onMessageReceivedEvent(ChatMessage pMessage, TChatMessageStatus Status)
 		{
-			if (pMessage.Sender != Core.CurrentUser && Status == TChatMessageStatus.cmsReceived)
+			if (DateTime.Now.Ticks < LastTick + 300000)
+				return;
+			if (pMessage.Sender.Handle != Core.CurrentUser.Handle)
 			{
-				
 				onMessageReceived(pMessage, Status);
+				LastTick = DateTime.Now.Ticks;
 			}
 				
 		}

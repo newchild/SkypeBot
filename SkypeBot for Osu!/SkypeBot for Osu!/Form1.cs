@@ -10,17 +10,18 @@ using SkypeBot_for_Osu_.SkypeBot;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Scripting.Hosting;
+using System.Runtime.InteropServices;
 
 namespace SkypeBot_for_Osu_
 {
+	
+
 	public partial class Form1 : Form
 	{
-		string description = "";
 		BotCore Core;
-		List<CompiledCode> allScripts = new List<CompiledCode>();
-		List<string> ScriptNames = new List<string>();
-		Scripting_Engine PyEngine;
 		string user;
+		List<Scripting_Engine> allScripts = new List<Scripting_Engine>();
+		List<string> ScriptNames = new List<string>();
 		public Form1()
 		{
 			InitializeComponent();
@@ -29,19 +30,20 @@ namespace SkypeBot_for_Osu_
 		private void Form1_Load(object sender, EventArgs e)
 		{
 			Core = new BotCore();
-			PyEngine = new Scripting_Engine();
-			setupVars(PyEngine);
 			user = Core.getNickName();
 			Core.onMessageReceived+=Core_onMessageReceived;
+			Console.Title = "Debug Log";
+			Console.WriteLine("Program correctly initialized...");
+
 		}	
 
 		private void Core_onMessageReceived(ChatMessage pMessage, TChatMessageStatus Status)
 		{
 			foreach (var script in allScripts)
 			{
-				PyEngine.runScript(script);
-				var test = PyEngine.getOnMessageFunc();
-				test(pMessage, Status);
+				var test = script.getOnMessageFunc();
+				if(test != null)
+					test(pMessage, Status);
 			}
 		}
 
@@ -53,6 +55,7 @@ namespace SkypeBot_for_Osu_
 			PyEngine.addVar("user", user);
 			PyEngine.addVar("sendMessage", new Action<string, string>(Core.sendMessage));
 			PyEngine.addVar("sendMessageToChat", new Action<Chat, string>(Core.sendMessageToChat));
+			PyEngine.addVar("log", new Action<string>(PyEngine.logSkript));
 		}
 
 		private void button1_Click(object sender, EventArgs e)
@@ -62,17 +65,21 @@ namespace SkypeBot_for_Osu_
 			if (!ScriptNames.Contains(openFileDialog1.SafeFileName))
 			{
 				var file = openFileDialog1.FileName;
-				var scriptloaded = PyEngine.loadScriptFromFile(file);
-				allScripts.Add(scriptloaded);
-				PyEngine.runScript(scriptloaded);
-				string desc = PyEngine.getDescription();
+				var engine = new Scripting_Engine(openFileDialog1.SafeFileName);
+				setupVars(engine);
+				var scriptloaded = engine.loadScriptFromFile(file);
+				allScripts.Add(engine);
+				engine.runScript(scriptloaded);
+				string desc = engine.getDescription();
 				ScriptNames.Add(openFileDialog1.SafeFileName);
+				Console.WriteLine(openFileDialog1.SafeFileName + " was succesfully loaded");
 				var stringBuilder = "Selected Scripts:\n";
 				foreach (var name in ScriptNames)
 				{
 					stringBuilder += name + ": " + desc + "\n";
 				}
 				label1.Text = stringBuilder;
+				
 			}
 			else
 			{
@@ -83,6 +90,11 @@ namespace SkypeBot_for_Osu_
 
 		private static void ShowMessageBox(string text){
 			MessageBox.Show(text);
+		}
+
+		public static void log(string text)
+		{
+			Console.WriteLine(text);
 		}
 		
 	}

@@ -18,13 +18,20 @@ namespace SkypeBot_for_Osu_.SkypeBot
 		private ScriptEngine pyEngine = null;
 		private ScriptRuntime pyRuntime = null;
 		private ScriptScope pyScope = null;
-		public Scripting_Engine()
+		string LoadedSkript;
+		public Scripting_Engine(string ScriptName)
 		{
 			pyEngine = Python.CreateEngine();
+			ICollection<string> searchPaths = pyEngine.GetSearchPaths();
+			searchPaths.Add("\\Lib");
+			pyEngine.SetSearchPaths(searchPaths);
 			pyRuntime = Python.CreateRuntime();
 			pyScope = pyEngine.CreateScope();
+			LoadedSkript = ScriptName;
 		}
 		
+		
+
 		public void addVar(string varName, object value){
 			pyScope.SetVariable(varName,value);
 		}
@@ -46,7 +53,25 @@ namespace SkypeBot_for_Osu_.SkypeBot
 
 		public dynamic getOnMessageFunc()
 		{
-			return pyScope.GetVariable("onMessage");
+			try
+			{
+				return pyScope.GetVariable("onMessage");
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+		}
+
+		public dynamic getImports()
+		{
+			try {
+				return pyScope.GetVariable("imports");
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
 		}
 
 		public dynamic getDescription()
@@ -61,7 +86,15 @@ namespace SkypeBot_for_Osu_.SkypeBot
 			
 		}
 
-		
+		public void importModule(string modName)
+		{
+			pyScope.ImportModule(modName);
+		}
+
+		public void logSkript(string text)
+		{
+			Form1.log(LoadedSkript + ": " + text);
+		}
 		
 	}
 }
