@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SKYPE4COMLib;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -11,6 +10,7 @@ namespace SkypeBot_for_Osu_.SkypeBot
 {
 	class BotCore
 	{
+		long delay = 100000000;
 		public event MessageHandler onMessageReceived;
 		public delegate void MessageHandler(ChatMessage pMessage, TChatMessageStatus Status);
 		private Skype Core;
@@ -64,7 +64,7 @@ namespace SkypeBot_for_Osu_.SkypeBot
 
 		void onMessageReceivedEvent(ChatMessage pMessage, TChatMessageStatus Status)
 		{
-			if (DateTime.Now.Ticks < LastTick + 300000)
+			if (DateTime.Now.Ticks < LastTick + delay)
 				return;
 			if (pMessage.Sender.Handle != Core.CurrentUser.Handle)
 			{
@@ -72,6 +72,11 @@ namespace SkypeBot_for_Osu_.SkypeBot
 				LastTick = DateTime.Now.Ticks;
 			}
 				
+		}
+
+		void setDelay(int sdelay)
+		{
+			delay = sdelay * 1000000;
 		}
 
 		 public void sendMessageToChat(Chat chat, string Text)

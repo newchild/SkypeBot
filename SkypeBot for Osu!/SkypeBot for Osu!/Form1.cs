@@ -96,6 +96,12 @@ namespace SkypeBot_for_Osu_
 		{
 			Console.WriteLine(text);
 		}
-		
+
+		private void trackBar1_Scroll(object sender, EventArgs e)
+		{
+			label3.Text = trackBar1.Value.ToString() + " Milliseconds";
+		}
+
+
 	}
 }
