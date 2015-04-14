@@ -35,6 +35,8 @@ namespace SkypeBot_for_Osu_
 			Core.onCallReceived += Core_onCallReceived;
 			Console.Title = "Debug Log";
 			Console.WriteLine("Program correctly initialized...");
+			openFileDialog1.CheckFileExists = true;
+			openFileDialog1.CheckPathExists = true;
 
 		}
 
@@ -76,6 +78,8 @@ namespace SkypeBot_for_Osu_
 		private void button1_Click(object sender, EventArgs e)
 		{
 			openFileDialog1.ShowDialog();
+			if(!openFileDialog1.SafeFileName.Contains(".py"))
+				return;
 			if (!ScriptNames.Contains(openFileDialog1.SafeFileName))
 			{
 				var file = openFileDialog1.FileName;
@@ -103,7 +107,9 @@ namespace SkypeBot_for_Osu_
 		}
 
 		private static void ShowMessageBox(string text){
+			Console.WriteLine("ShowMessageBox is deprecated, please use log instead");
 			MessageBox.Show(text);
+			
 		}
 
 		public static void log(string text)
