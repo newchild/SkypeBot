@@ -10,13 +10,14 @@ namespace SkypeBot_for_Osu_.SkypeBot
 {
 	class BotCore
 	{
-		long delay = 100000000;
+		long delay = 1000000;
 		public event MessageHandler onMessageReceived;
 		public delegate void MessageHandler(ChatMessage pMessage, TChatMessageStatus Status);
+		public event CallHandler onCallReceived;
+		public delegate void CallHandler(Call pCall, TCallStatus Status);
 		private Skype Core;
 		private bool connected;
 		private string CurrentStatus;
-		long LastTick =  DateTime.Now.Ticks;
 		public BotCore()
 		{
 			Core = new Skype();
@@ -47,38 +48,39 @@ namespace SkypeBot_for_Osu_.SkypeBot
 				throw new Exception("Could not connect");
 			Core.MessageStatus += onMessageReceivedEvent;
 			Core.CallStatus += Core_CallStatus;
-			Core.UserAuthorizationRequestReceived += Core_UserAuthorizationRequestReceived;
+			Core.CallStatus+=Core_CallStatus;
 		}
 
-		void Core_UserAuthorizationRequestReceived(User pUser)
-		{
-				
-		}
 
 		
 
 		void Core_CallStatus(Call pCall, TCallStatus Status)
 		{
-			
+			if(Status == TCallStatus.clsRinging)
+				onCallReceived(pCall, Status);
 		}
 
 		void onMessageReceivedEvent(ChatMessage pMessage, TChatMessageStatus Status)
-		{
-			if (DateTime.Now.Ticks < LastTick + delay)
-				return;
-			if (pMessage.Sender.Handle != Core.CurrentUser.Handle)
+		{	
+			if (pMessage.Sender.Handle != Core.CurrentUser.Handle && Status == TChatMessageStatus.cmsReceived)
 			{
 				onMessageReceived(pMessage, Status);
-				LastTick = DateTime.Now.Ticks;
+				
 			}
 				
 		}
 
-		void setDelay(int sdelay)
+
+		public void declineCall(Call myCall)
 		{
-			delay = sdelay * 1000000;
+			myCall.Finish();
 		}
 
+		public void acceptCall(Call myCall)
+		{
+			myCall.Answer();
+		}
+		
 		 public void sendMessageToChat(Chat chat, string Text)
 		 {
 			 chat.SendMessage(Text);
@@ -91,6 +93,37 @@ namespace SkypeBot_for_Osu_.SkypeBot
 		 public string getNickName()
 		 {
 			 return Core.CurrentUser.Handle;
+		 }
+
+		 public void setStatus(string Status)
+		 {
+			 switch(Status.ToLower()){
+				 case "away":
+					 Core.CurrentUserStatus = TUserStatus.cusAway;
+					 break;
+				 case "dnd":
+					 Core.CurrentUserStatus = TUserStatus.cusDoNotDisturb;
+					 break;
+				 case "online":
+					 Core.CurrentUserStatus = TUserStatus.cusOnline;
+					 break;
+				 case "hidden":
+					 Core.CurrentUserStatus = TUserStatus.cusInvisible;
+					 break;
+				 case "offline":
+					 Core.CurrentUserStatus = TUserStatus.cusOffline;
+					 break;
+			 }
+		 }
+
+		 public bool isInCall()
+		 {
+			 foreach (Call item in Core.ActiveCalls)
+			 {
+				 if (item != null)
+					 return true;
+			 }
+			 return false;
 		 }
 		
 	}

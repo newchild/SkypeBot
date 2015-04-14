@@ -63,10 +63,10 @@ namespace SkypeBot_for_Osu_.SkypeBot
 			}
 		}
 
-		public dynamic getImports()
+		public dynamic getOnCall()
 		{
 			try {
-				return pyScope.GetVariable("imports");
+				return pyScope.GetVariable("onCall");
 			}
 			catch (Exception e)
 			{

@@ -31,11 +31,22 @@ namespace SkypeBot_for_Osu_
 		{
 			Core = new BotCore();
 			user = Core.getNickName();
-			Core.onMessageReceived+=Core_onMessageReceived;
+			Core.onMessageReceived += Core_onMessageReceived;
+			Core.onCallReceived += Core_onCallReceived;
 			Console.Title = "Debug Log";
 			Console.WriteLine("Program correctly initialized...");
 
-		}	
+		}
+
+		void Core_onCallReceived(Call pCall, TCallStatus Status)
+		{
+			foreach (var script in allScripts)
+			{
+				var test = script.getOnMessageFunc();
+				if (test != null)
+					test(pCall, Status);
+			}
+		}
 
 		private void Core_onMessageReceived(ChatMessage pMessage, TChatMessageStatus Status)
 		{
@@ -56,11 +67,14 @@ namespace SkypeBot_for_Osu_
 			PyEngine.addVar("sendMessage", new Action<string, string>(Core.sendMessage));
 			PyEngine.addVar("sendMessageToChat", new Action<Chat, string>(Core.sendMessageToChat));
 			PyEngine.addVar("log", new Action<string>(PyEngine.logSkript));
+			PyEngine.addVar("setStatus", new Action<string>(Core.setStatus));
+			PyEngine.addVar("isInCall", new Func<bool>(Core.isInCall));
+			PyEngine.addVar("acceptCall", new Action<Call>(Core.acceptCall));
+			PyEngine.addVar("declineCall", new Action<Call>(Core.declineCall));
 		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			
 			openFileDialog1.ShowDialog();
 			if (!ScriptNames.Contains(openFileDialog1.SafeFileName))
 			{
@@ -97,10 +111,7 @@ namespace SkypeBot_for_Osu_
 			Console.WriteLine(text);
 		}
 
-		private void trackBar1_Scroll(object sender, EventArgs e)
-		{
-			label3.Text = trackBar1.Value.ToString() + " Milliseconds";
-		}
+		
 
 
 	}
